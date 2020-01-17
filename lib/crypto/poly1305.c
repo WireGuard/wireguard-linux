@@ -3,14 +3,15 @@
  * Poly1305 authenticator algorithm, RFC7539
  *
  * Copyright (C) 2015 Martin Willi
- *
- * Based on public domain code by Andrew Moon and Daniel J. Bernstein.
+ * Copyright (C) 2019-2020 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
  */
 
 #include <crypto/internal/poly1305.h>
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <asm/unaligned.h>
+
+bool poly1305_selftest(void);
 
 void poly1305_init_generic(struct poly1305_desc_ctx *desc, const u8 *key)
 {
@@ -73,5 +74,20 @@ void poly1305_final_generic(struct poly1305_desc_ctx *desc, u8 *dst)
 }
 EXPORT_SYMBOL_GPL(poly1305_final_generic);
 
-MODULE_LICENSE("GPL");
-MODULE_AUTHOR("Martin Willi <martin@strongswan.org>");
+static int __init mod_init(void)
+{
+        if (!IS_ENABLED(CONFIG_CRYPTO_MANAGER_DISABLE_TESTS) &&
+            WARN_ON(!poly1305_selftest()))
+                return -ENODEV;
+        return 0;
+}
+
+static void __exit mod_exit(void)
+{
+}
+
+module_init(mod_init);
+module_exit(mod_exit);
+MODULE_LICENSE("GPL v2");
+MODULE_DESCRIPTION("Poly1305 message authenticator");
+MODULE_AUTHOR("Jason A. Donenfeld <Jason@zx2c4.com>");
