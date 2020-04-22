@@ -472,10 +472,10 @@ static void wg_packet_consume_data(struct wg_device *wg, struct sk_buff *skb)
 	if (unlikely(READ_ONCE(peer->is_dead)))
 		goto err;
 
-	ret = wg_queue_enqueue_per_device_and_peer(&wg->decrypt_queue,
+	ret = wg_queue_enqueue_per_device_and_peer(&wg->crypt_queue,
 						   &peer->rx_queue, skb,
 						   wg->packet_crypt_wq,
-						   &wg->decrypt_queue.last_cpu,
+						   &wg->crypt_queue.last_cpu,
 						   PACKET_STATE_NOT_DECRYPTED);
 	if (unlikely(ret == -EPIPE))
 		wg_queue_enqueue_per_peer_napi(skb, PACKET_STATE_DEAD);

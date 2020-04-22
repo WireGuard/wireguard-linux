@@ -38,7 +38,7 @@ struct crypt_queue {
 
 struct wg_device {
 	struct net_device *dev;
-	struct crypt_queue encrypt_queue, decrypt_queue;
+	struct crypt_queue crypt_queue;
 	struct sock __rcu *sock4, *sock6;
 	struct net *creating_net;
 	struct noise_static_identity static_identity;

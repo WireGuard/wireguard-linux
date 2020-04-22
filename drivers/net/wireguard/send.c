@@ -219,10 +219,10 @@ static void wg_packet_create_data(struct sk_buff *first)
 	if (unlikely(READ_ONCE(peer->is_dead)))
 		goto err;
 
-	ret = wg_queue_enqueue_per_device_and_peer(&wg->encrypt_queue,
+	ret = wg_queue_enqueue_per_device_and_peer(&wg->crypt_queue,
 						   &peer->tx_queue, first,
 						   wg->packet_crypt_wq,
-						   &wg->encrypt_queue.last_cpu,
+						   &wg->crypt_queue.last_cpu,
 						   PACKET_STATE_NOT_ENCRYPTED);
 	if (unlikely(ret == -EPIPE))
 		wg_queue_enqueue_per_peer(&peer->tx_queue, first,

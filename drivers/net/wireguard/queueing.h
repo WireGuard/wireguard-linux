@@ -30,8 +30,6 @@ void wg_packet_receive(struct wg_device *wg, struct sk_buff *skb);
 void wg_packet_handshake_receive_worker(struct work_struct *work);
 /* NAPI poll function: */
 int wg_packet_rx_poll(struct napi_struct *napi, int budget);
-/* Workqueue worker: */
-void wg_packet_decrypt_worker(struct work_struct *work);
 
 /* send.c APIs: */
 void wg_packet_send_queued_handshake_initiation(struct wg_peer *peer,
@@ -46,7 +44,9 @@ void wg_packet_send_staged_packets(struct wg_peer *peer);
 /* Workqueue workers: */
 void wg_packet_handshake_send_worker(struct work_struct *work);
 void wg_packet_tx_worker(struct work_struct *work);
-void wg_packet_encrypt_worker(struct work_struct *work);
+
+/* symmetric.c APIs: */
+void wg_packet_crypt_worker(struct work_struct *work);
 
 enum packet_state {
 	PACKET_STATE_NOT_ENCRYPTED,

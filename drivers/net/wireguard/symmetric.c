@@ -134,40 +134,37 @@ static bool decrypt_packet(struct sk_buff *skb, struct noise_symmetric_key *key)
 	return true;
 }
 
-void wg_packet_encrypt_worker(struct work_struct *work)
+void wg_packet_crypt_worker(struct work_struct *work)
 {
 	struct crypt_queue *queue = container_of(work, struct multicore_worker,
 						 work)->ptr;
 	struct sk_buff *first, *skb, *next;
 
 	while ((first = ptr_ring_consume_bh(&queue->ring)) != NULL) {
-		enum packet_state state = PACKET_STATE_ENCRYPTED;
+		switch (atomic_read_acquire(&PACKET_CB(first)->state)) {
+		case PACKET_STATE_NOT_ENCRYPTED: {
+			enum packet_state state = PACKET_STATE_ENCRYPTED;
 
-		skb_list_walk_safe(first, skb, next) {
-			if (likely(encrypt_packet(skb,
-					PACKET_CB(first)->keypair))) {
-				wg_reset_packet(skb);
-			} else {
-				state = PACKET_STATE_DEAD;
-				break;
+			skb_list_walk_safe(first, skb, next) {
+				if (likely(encrypt_packet(skb,
+						PACKET_CB(first)->keypair))) {
+					wg_reset_packet(skb);
+				} else {
+					state = PACKET_STATE_DEAD;
+					break;
+				}
 			}
+			wg_queue_enqueue_per_peer(&PACKET_PEER(first)->tx_queue,
+						  first, state);
+			break;
 		}
-		wg_queue_enqueue_per_peer(&PACKET_PEER(first)->tx_queue, first,
-					  state);
+		case PACKET_STATE_NOT_DECRYPTED: {
+			enum packet_state state = likely(decrypt_packet(first,
+					&PACKET_CB(first)->keypair->receiving)) ?
+					PACKET_STATE_DECRYPTED : PACKET_STATE_DEAD;
+			wg_queue_enqueue_per_peer_napi(first, state);
+			break;
+		}
+		}
 	}
 }
-
-void wg_packet_decrypt_worker(struct work_struct *work)
-{
-	struct crypt_queue *queue = container_of(work, struct multicore_worker,
-						 work)->ptr;
-	struct sk_buff *skb;
-
-	while ((skb = ptr_ring_consume_bh(&queue->ring)) != NULL) {
-		enum packet_state state = likely(decrypt_packet(skb,
-				&PACKET_CB(skb)->keypair->receiving)) ?
-				PACKET_STATE_DECRYPTED : PACKET_STATE_DEAD;
-		wg_queue_enqueue_per_peer_napi(skb, state);
-	}
-}
-
