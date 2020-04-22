@@ -49,8 +49,10 @@ void wg_packet_tx_worker(struct work_struct *work);
 void wg_packet_encrypt_worker(struct work_struct *work);
 
 enum packet_state {
-	PACKET_STATE_UNCRYPTED,
-	PACKET_STATE_CRYPTED,
+	PACKET_STATE_NOT_ENCRYPTED,
+	PACKET_STATE_NOT_DECRYPTED,
+	PACKET_STATE_ENCRYPTED,
+	PACKET_STATE_DECRYPTED,
 	PACKET_STATE_DEAD
 };
 
@@ -144,11 +146,12 @@ static inline int wg_cpumask_next_online(int *next)
 
 static inline int wg_queue_enqueue_per_device_and_peer(
 	struct crypt_queue *device_queue, struct crypt_queue *peer_queue,
-	struct sk_buff *skb, struct workqueue_struct *wq, int *next_cpu)
+	struct sk_buff *skb, struct workqueue_struct *wq, int *next_cpu,
+	enum packet_state state)
 {
 	int cpu;
 
-	atomic_set_release(&PACKET_CB(skb)->state, PACKET_STATE_UNCRYPTED);
+	atomic_set_release(&PACKET_CB(skb)->state, state);
 	/* We first queue this up for the peer ingestion, but the consumer
 	 * will wait for the state to change to CRYPTED or DEAD before.
 	 */

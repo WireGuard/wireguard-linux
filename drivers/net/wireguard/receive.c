@@ -414,13 +414,13 @@ int wg_packet_rx_poll(struct napi_struct *napi, int budget)
 
 	while ((skb = __ptr_ring_peek(&queue->ring)) != NULL &&
 	       (state = atomic_read_acquire(&PACKET_CB(skb)->state)) !=
-		       PACKET_STATE_UNCRYPTED) {
+		       PACKET_STATE_NOT_DECRYPTED) {
 		__ptr_ring_discard_one(&queue->ring);
 		peer = PACKET_PEER(skb);
 		keypair = PACKET_CB(skb)->keypair;
 		free = true;
 
-		if (unlikely(state != PACKET_STATE_CRYPTED))
+		if (unlikely(state != PACKET_STATE_DECRYPTED))
 			goto next;
 
 		if (unlikely(!counter_validate(&keypair->receiving.counter,
@@ -475,7 +475,8 @@ static void wg_packet_consume_data(struct wg_device *wg, struct sk_buff *skb)
 	ret = wg_queue_enqueue_per_device_and_peer(&wg->decrypt_queue,
 						   &peer->rx_queue, skb,
 						   wg->packet_crypt_wq,
-						   &wg->decrypt_queue.last_cpu);
+						   &wg->decrypt_queue.last_cpu,
+						   PACKET_STATE_NOT_DECRYPTED);
 	if (unlikely(ret == -EPIPE))
 		wg_queue_enqueue_per_peer_napi(skb, PACKET_STATE_DEAD);
 	if (likely(!ret || ret == -EPIPE)) {

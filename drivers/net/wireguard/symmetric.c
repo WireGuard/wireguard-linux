@@ -141,7 +141,7 @@ void wg_packet_encrypt_worker(struct work_struct *work)
 	struct sk_buff *first, *skb, *next;
 
 	while ((first = ptr_ring_consume_bh(&queue->ring)) != NULL) {
-		enum packet_state state = PACKET_STATE_CRYPTED;
+		enum packet_state state = PACKET_STATE_ENCRYPTED;
 
 		skb_list_walk_safe(first, skb, next) {
 			if (likely(encrypt_packet(skb,
@@ -166,7 +166,7 @@ void wg_packet_decrypt_worker(struct work_struct *work)
 	while ((skb = ptr_ring_consume_bh(&queue->ring)) != NULL) {
 		enum packet_state state = likely(decrypt_packet(skb,
 				&PACKET_CB(skb)->keypair->receiving)) ?
-				PACKET_STATE_CRYPTED : PACKET_STATE_DEAD;
+				PACKET_STATE_DECRYPTED : PACKET_STATE_DEAD;
 		wg_queue_enqueue_per_peer_napi(skb, state);
 	}
 }

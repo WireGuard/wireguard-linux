@@ -194,12 +194,12 @@ void wg_packet_tx_worker(struct work_struct *work)
 
 	while ((first = __ptr_ring_peek(&queue->ring)) != NULL &&
 	       (state = atomic_read_acquire(&PACKET_CB(first)->state)) !=
-		       PACKET_STATE_UNCRYPTED) {
+		       PACKET_STATE_NOT_ENCRYPTED) {
 		__ptr_ring_discard_one(&queue->ring);
 		peer = PACKET_PEER(first);
 		keypair = PACKET_CB(first)->keypair;
 
-		if (likely(state == PACKET_STATE_CRYPTED))
+		if (likely(state == PACKET_STATE_ENCRYPTED))
 			wg_packet_create_data_done(first, peer);
 		else
 			kfree_skb_list(first);
@@ -222,7 +222,8 @@ static void wg_packet_create_data(struct sk_buff *first)
 	ret = wg_queue_enqueue_per_device_and_peer(&wg->encrypt_queue,
 						   &peer->tx_queue, first,
 						   wg->packet_crypt_wq,
-						   &wg->encrypt_queue.last_cpu);
+						   &wg->encrypt_queue.last_cpu,
+						   PACKET_STATE_NOT_ENCRYPTED);
 	if (unlikely(ret == -EPIPE))
 		wg_queue_enqueue_per_peer(&peer->tx_queue, first,
 					  PACKET_STATE_DEAD);
