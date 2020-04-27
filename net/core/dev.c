@@ -4630,6 +4630,18 @@ static u32 netif_receive_generic_xdp(struct sk_buff *skb,
 	 * header.
 	 */
 	mac_len = skb->data - skb_mac_header(skb);
+	if (!mac_len && !skb->dev->hard_header_len) {
+		/* For l3 packets, we push on a fake mac header, and then
+		 * pull it off again, so that it has the same skb geometry
+		 * as for the l2 case.
+		 */
+		eth = skb_push(skb, ETH_HLEN);
+		eth_zero_addr(eth->h_source);
+		eth_zero_addr(eth->h_dest);
+		eth->h_proto = skb->protocol;
+		__skb_pull(skb, ETH_HLEN);
+		mac_len = ETH_HLEN;
+	}
 	hlen = skb_headlen(skb) + mac_len;
 	xdp->data = skb->data - mac_len;
 	xdp->data_meta = xdp->data;
