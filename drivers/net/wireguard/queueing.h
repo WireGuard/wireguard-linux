@@ -85,6 +85,7 @@ static inline void wg_reset_packet(struct sk_buff *skb, bool encapsulating)
 		skb->l4_hash = l4_hash;
 		skb->sw_hash = sw_hash;
 		skb->hash = hash;
+		skb_orphan(skb);
 	}
 	skb->queue_mapping = 0;
 	skb->nohdr = 0;
