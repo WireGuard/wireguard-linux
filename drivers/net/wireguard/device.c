@@ -299,7 +299,7 @@ static int wg_newlink(struct net *src_net, struct net_device *dev,
 	mutex_init(&wg->socket_update_lock);
 	mutex_init(&wg->device_update_lock);
 	skb_queue_head_init(&wg->incoming_handshakes);
-	wg_allowedips_init(&wg->peer_allowedips);
+	wg_allowedips_init(&wg->peer_allowedips, &wg->device_update_lock);
 	wg_cookie_checker_init(&wg->cookie_checker, wg);
 	INIT_LIST_HEAD(&wg->peer_list);
 	wg->device_update_gen = 1;

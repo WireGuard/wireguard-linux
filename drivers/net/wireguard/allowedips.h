@@ -32,17 +32,19 @@ struct allowedips_node {
 struct allowedips {
 	struct allowedips_node __rcu *root4;
 	struct allowedips_node __rcu *root6;
+	struct mutex *update_lock;
+	struct delayed_work cleanup_work;
 	u64 seq;
+	bool dirty4, dirty6;
 };
 
-void wg_allowedips_init(struct allowedips *table);
-void wg_allowedips_free(struct allowedips *table, struct mutex *mutex);
+void wg_allowedips_init(struct allowedips *table, struct mutex *update_lock);
+void wg_allowedips_free(struct allowedips *table);
 int wg_allowedips_insert_v4(struct allowedips *table, const struct in_addr *ip,
-			    u8 cidr, struct wg_peer *peer, struct mutex *lock);
+			    u8 cidr, struct wg_peer *peer);
 int wg_allowedips_insert_v6(struct allowedips *table, const struct in6_addr *ip,
-			    u8 cidr, struct wg_peer *peer, struct mutex *lock);
-void wg_allowedips_remove_by_peer(struct allowedips *table,
-				  struct wg_peer *peer, struct mutex *lock);
+			    u8 cidr, struct wg_peer *peer);
+void wg_allowedips_remove_by_peer(struct allowedips *table, struct wg_peer *peer);
 /* The ip input pointer should be __aligned(__alignof(u64))) */
 int wg_allowedips_read_node(struct allowedips_node *node, u8 ip[16], u8 *cidr);
 

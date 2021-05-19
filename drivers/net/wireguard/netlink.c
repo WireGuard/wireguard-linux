@@ -340,16 +340,12 @@ static int set_allowedip(struct wg_peer *peer, struct nlattr **attrs)
 
 	if (family == AF_INET && cidr <= 32 &&
 	    nla_len(attrs[WGALLOWEDIP_A_IPADDR]) == sizeof(struct in_addr))
-		ret = wg_allowedips_insert_v4(
-			&peer->device->peer_allowedips,
-			nla_data(attrs[WGALLOWEDIP_A_IPADDR]), cidr, peer,
-			&peer->device->device_update_lock);
+		ret = wg_allowedips_insert_v4(&peer->device->peer_allowedips,
+			nla_data(attrs[WGALLOWEDIP_A_IPADDR]), cidr, peer);
 	else if (family == AF_INET6 && cidr <= 128 &&
 		 nla_len(attrs[WGALLOWEDIP_A_IPADDR]) == sizeof(struct in6_addr))
-		ret = wg_allowedips_insert_v6(
-			&peer->device->peer_allowedips,
-			nla_data(attrs[WGALLOWEDIP_A_IPADDR]), cidr, peer,
-			&peer->device->device_update_lock);
+		ret = wg_allowedips_insert_v6(&peer->device->peer_allowedips,
+			nla_data(attrs[WGALLOWEDIP_A_IPADDR]), cidr, peer);
 
 	return ret;
 }
@@ -449,8 +445,7 @@ static int set_peer(struct wg_device *wg, struct nlattr **attrs)
 	}
 
 	if (flags & WGPEER_F_REPLACE_ALLOWEDIPS)
-		wg_allowedips_remove_by_peer(&wg->peer_allowedips, peer,
-					     &wg->device_update_lock);
+		wg_allowedips_remove_by_peer(&wg->peer_allowedips, peer);
 
 	if (attrs[WGPEER_A_ALLOWEDIPS]) {
 		struct nlattr *attr, *allowedip[WGALLOWEDIP_A_MAX + 1];
