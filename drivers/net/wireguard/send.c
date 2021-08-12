@@ -290,7 +290,7 @@ void wg_packet_encrypt_worker(struct work_struct *work)
 						 work)->ptr;
 	struct sk_buff *first, *skb, *next;
 
-	while ((first = ptr_ring_consume_bh(&queue->ring)) != NULL) {
+	while ((first = mpmc_ring_consume(&queue->ring)) != NULL) {
 		enum packet_state state = PACKET_STATE_CRYPTED;
 
 		skb_list_walk_safe(first, skb, next) {

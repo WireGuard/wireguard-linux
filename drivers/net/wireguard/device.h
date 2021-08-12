@@ -16,7 +16,7 @@
 #include <linux/workqueue.h>
 #include <linux/mutex.h>
 #include <linux/net.h>
-#include <linux/ptr_ring.h>
+#include <linux/mpmc_ring.h>
 
 struct wg_device;
 
@@ -26,7 +26,7 @@ struct multicore_worker {
 };
 
 struct crypt_queue {
-	struct ptr_ring ring;
+	struct mpmc_ring ring;
 	struct multicore_worker __percpu *worker;
 	int last_cpu;
 };

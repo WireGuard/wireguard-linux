@@ -109,7 +109,7 @@ static int wg_stop(struct net_device *dev)
 		wg_noise_reset_last_sent_handshake(&peer->last_sent_handshake);
 	}
 	mutex_unlock(&wg->device_update_lock);
-	while ((skb = ptr_ring_consume(&wg->handshake_queue.ring)) != NULL)
+	while ((skb = mpmc_ring_consume(&wg->handshake_queue.ring)) != NULL)
 		kfree_skb(skb);
 	atomic_set(&wg->handshake_queue_len, 0);
 	wg_socket_reinit(wg, NULL, NULL);
