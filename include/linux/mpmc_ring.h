@@ -92,7 +92,7 @@ static inline int mpmc_ring_init(struct mpmc_ring *ring, unsigned int size, gfp_
                 return -EOVERFLOW;
 	if (!is_power_of_2(size))
 		return -EINVAL;
-	if (size < NR_CPUS)
+	if (size < nr_cpu_ids)
 		return -EUSERS;
 	ring->mask = size - 1;
 	atomic_set(&ring->consumer_head, 0);
