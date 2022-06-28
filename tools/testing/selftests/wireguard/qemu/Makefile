@@ -248,13 +248,24 @@ QEMU_MACHINE := -cpu host,accel=kvm -machine s390-ccw-virtio -append $(KERNEL_CM
 else
 QEMU_MACHINE := -cpu max -machine s390-ccw-virtio -append $(KERNEL_CMDLINE)
 endif
+else ifeq ($(ARCH),or1k)
+CHOST := or1k-linux-musl
+QEMU_ARCH := or1k
+KERNEL_ARCH := openrisc
+KERNEL_BZIMAGE := $(KERNEL_BUILD_PATH)/vmlinux
+QEMU_VPORT_RESULT := virtio-serial-device
+ifeq ($(HOST_ARCH),$(ARCH))
+QEMU_MACHINE := -cpu host,accel=kvm -machine virt
+else
+QEMU_MACHINE := -cpu or1200 -machine virt
+endif
 else ifeq ($(ARCH),um)
 CHOST := $(HOST_ARCH)-linux-musl
 KERNEL_BZIMAGE := $(KERNEL_BUILD_PATH)/vmlinux
 KERNEL_ARCH := um
 KERNEL_CMDLINE := $(shell sed -n 's/CONFIG_CMDLINE=\(.*\)/\1/p' arch/um.config)
 else
-$(error I only build: x86_64, i686, arm, armeb, aarch64, aarch64_be, mips, mipsel, mips64, mips64el, powerpc64, powerpc64le, powerpc, m68k, riscv64, riscv32, s390x, um)
+$(error I only build: x86_64, i686, arm, armeb, aarch64, aarch64_be, mips, mipsel, mips64, mips64el, powerpc64, powerpc64le, powerpc, m68k, riscv64, riscv32, s390x, or1k, um)
 endif
 
 TOOLCHAIN_FILENAME := $(CHOST)-cross.tgz
