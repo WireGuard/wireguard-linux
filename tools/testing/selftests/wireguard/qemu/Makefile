@@ -107,22 +107,22 @@ CHOST := x86_64-linux-musl
 QEMU_ARCH := x86_64
 KERNEL_ARCH := x86_64
 KERNEL_BZIMAGE := $(KERNEL_BUILD_PATH)/arch/x86/boot/bzImage
+QEMU_VPORT_RESULT := virtio-serial-device
 ifeq ($(HOST_ARCH),$(ARCH))
-QEMU_MACHINE := -cpu host -machine q35,accel=kvm
+QEMU_MACHINE := -cpu host -machine microvm,accel=kvm,pit=off,pic=off,rtc=off -no-acpi
 else
-QEMU_MACHINE := -cpu Skylake-Server -machine q35
-CFLAGS += -march=skylake-avx512
+QEMU_MACHINE := -cpu max -machine microvm -no-acpi
 endif
 else ifeq ($(ARCH),i686)
 CHOST := i686-linux-musl
 QEMU_ARCH := i386
 KERNEL_ARCH := x86
 KERNEL_BZIMAGE := $(KERNEL_BUILD_PATH)/arch/x86/boot/bzImage
+QEMU_VPORT_RESULT := virtio-serial-device
 ifeq ($(subst x86_64,i686,$(HOST_ARCH)),$(ARCH))
-QEMU_MACHINE := -cpu host -machine q35,accel=kvm
+QEMU_MACHINE := -cpu host -machine microvm,accel=kvm,pit=off,pic=off,rtc=off -no-acpi
 else
-QEMU_MACHINE := -cpu coreduo -machine q35
-CFLAGS += -march=prescott
+QEMU_MACHINE := -cpu coreduo -machine microvm -no-acpi
 endif
 else ifeq ($(ARCH),mips64)
 CHOST := mips64-linux-musl
