@@ -1,0 +1,93 @@
+Skip to content
+Your account has been flagged.
+Because of that, your profile is hidden from the public. If you believe this is a mistake, contact support to have your account status reviewed.
+WireGuard
+/
+wireguard-linux
+Public
+Mirror only. Official repository is at https://git.zx2c4.com/wireguard-linux
+
+www.wireguard.com
+License
+ View license
+ 770 stars  122 forks
+Code
+Pull requests
+Security
+Insights
+WireGuard/wireguard-linux
+Latest commit
+@zx2c4
+Jiri Slaby (SUSE) and zx2c4
+…
+on Dec 13, 2022
+Git stats
+Files
+README
+Linux kernel
+============
+
+There are several guides for kernel developers and users. These guides can
+be rendered in a number of formats, like HTML and PDF. Please read
+Documentation/admin-guide/README.rst first.
+
+In order to build the documentation, use ``make htmldocs`` or
+``make pdfdocs``.  The formatted documentation can also be read online at:
+
+    https://www.kernel.org/doc/html/latest/
+
+There are various text files in the Documentation/ subdirectory,
+several of them using the Restructured Text markup notation.
+
+Please read the Documentation/process/changes.rst file, as it contains the
+requirements for building and running the kernel, and information about
+the problems which may result by upgrading your kernel.
+Releases
+No releases published
+Packages
+No packages published
+Contributors 5,000+
+@torvalds
+@davem330
+@tiwai
+@broonie
+@arndb
+@gregkh
+@ickle
+@mchehab
+@jmberg
+@htejun
+@bigguiness
++ 11,662 contributors
+Languages
+C
+98.5%
+ 
+Assembly
+0.8%
+ 
+Shell
+0.3%
+ 
+Makefile
+0.2%
+ 
+Python
+0.1%
+ 
+Perl
+0.1%
+Footer
+© 2023 GitHub, Inc.
+Footer navigation
+Terms
+Privacy
+Security
+Status
+Docs
+Contact GitHub
+Pricing
+API
+Training
+Blog
+About
