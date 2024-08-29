@@ -39,7 +39,7 @@ endef
 
 $(eval $(call tar_download,IPERF,iperf,3.11,.tar.gz,https://downloads.es.net/pub/iperf/,de8cb409fad61a0574f4cb07eb19ce1159707403ac2dc01b5d175e91240b7e5f))
 $(eval $(call tar_download,BASH,bash,5.1.16,.tar.gz,https://ftp.gnu.org/gnu/bash/,5bac17218d3911834520dad13cd1f85ab944e1c09ae1aba55906be1f8192f558))
-$(eval $(call tar_download,IPROUTE2,iproute2,5.17.0,.tar.gz,https://www.kernel.org/pub/linux/utils/net/iproute2/,bda331d5c4606138892f23a565d78fca18919b4d508a0b7ca8391c2da2db68b9))
+$(eval $(call tar_download,IPROUTE2,iproute2,6.9.0,.tar.gz,https://www.kernel.org/pub/linux/utils/net/iproute2/,32c2bed6929f81303f24623cc3392f6f867c0fe368b99933786110ad3f041e72))
 $(eval $(call tar_download,IPTABLES,iptables,1.8.7,.tar.bz2,https://www.netfilter.org/projects/iptables/files/,c109c96bb04998cd44156622d36f8e04b140701ec60531a10668cfdff5e8d8f0))
 $(eval $(call tar_download,NMAP,nmap,7.92,.tgz,https://nmap.org/dist/,064183ea642dc4c12b1ab3b5358ce1cef7d2e7e11ffa2849f16d339f5b717117))
 $(eval $(call tar_download,IPUTILS,iputils,s20190709,.tar.gz,https://github.com/iputils/iputils/archive/s20190709.tar.gz/#,a15720dd741d7538dd2645f9f516d193636ae4300ff7dbc8bfca757bf166490a))
@@ -409,7 +409,7 @@ $(BASH_PATH)/bash: | $(BASH_PATH)/.installed $(USERSPACE_DEPS)
 $(IPROUTE2_PATH)/.installed: $(IPROUTE2_TAR)
 	mkdir -p $(BUILD_PATH)
 	flock -s $<.lock tar -C $(BUILD_PATH) -xf $<
-	printf 'CC:=$(CC)\nPKG_CONFIG:=pkg-config\nTC_CONFIG_XT:=n\nTC_CONFIG_ATM:=n\nTC_CONFIG_IPSET:=n\nIP_CONFIG_SETNS:=y\nHAVE_ELF:=n\nHAVE_MNL:=n\nHAVE_BERKELEY_DB:=n\nHAVE_LATEX:=n\nHAVE_PDFLATEX:=n\nCFLAGS+=-DHAVE_SETNS -DHAVE_HANDLE_AT\n' > $(IPROUTE2_PATH)/config.mk
+	printf 'CC:=$(CC)\nPKG_CONFIG:=pkg-config\nTC_CONFIG_XT:=n\nTC_CONFIG_ATM:=n\nTC_CONFIG_IPSET:=n\nIP_CONFIG_SETNS:=y\nHAVE_ELF:=n\nHAVE_MNL:=n\nHAVE_BERKELEY_DB:=n\nHAVE_LATEX:=n\nHAVE_PDFLATEX:=n\nCONF_COLOR:=COLOR_OPT_NEVER\nCFLAGS+=-DHAVE_SETNS -DHAVE_HANDLE_AT\n' > $(IPROUTE2_PATH)/config.mk
 	printf 'libutil.a.done:\n\tflock -x $$@.lock $$(MAKE) -C lib\n\ttouch $$@\nip/ip: libutil.a.done\n\t$$(MAKE) -C ip ip\nmisc/ss: libutil.a.done\n\t$$(MAKE) -C misc ss\n' >> $(IPROUTE2_PATH)/Makefile
 	touch $@
 
