@@ -37,6 +37,7 @@ $(DISTFILES_PATH)/$(1): | $(4)
 	flock -x $$@.lock -c '[ -f $$@ ] && exit 0; wget -O $$@.tmp $(MIRROR)$(1) || wget -O $$@.tmp $(2)$(1) || rm -f $$@.tmp; [ -f $$@.tmp ] || exit 1; if ([ -n "$(4)" ] && sed -n "s#^\([a-f0-9]\{64\}\)  \($(1)\)\$$$$#\1  $(DISTFILES_PATH)/\2.tmp#p" "$(4)" || echo "$(3)  $$@.tmp") | sha256sum -c -; then mv $$@.tmp $$@; else rm -f $$@.tmp; exit 71; fi'
 endef
 
+$(eval $(call tar_download,MUSL,musl,1.2.5,.tar.gz,https://musl.libc.org/releases/,a9a118bbe84d8764da0ea0d28b3ab3fae8477fc7e4085d90102b8596fc7c75e4))
 $(eval $(call tar_download,IPERF,iperf,3.11,.tar.gz,https://downloads.es.net/pub/iperf/,de8cb409fad61a0574f4cb07eb19ce1159707403ac2dc01b5d175e91240b7e5f))
 $(eval $(call tar_download,BASH,bash,5.1.16,.tar.gz,https://ftp.gnu.org/gnu/bash/,5bac17218d3911834520dad13cd1f85ab944e1c09ae1aba55906be1f8192f558))
 $(eval $(call tar_download,IPROUTE2,iproute2,6.9.0,.tar.gz,https://www.kernel.org/pub/linux/utils/net/iproute2/,32c2bed6929f81303f24623cc3392f6f867c0fe368b99933786110ad3f041e72))
@@ -54,7 +55,7 @@ export CPPFLAGS :=
 
 QEMU_VPORT_RESULT :=
 ifeq ($(ARCH),aarch64)
-CHOST := aarch64-linux-musl
+CHOST := aarch64-linux
 QEMU_ARCH := aarch64
 KERNEL_ARCH := arm64
 KERNEL_BZIMAGE := $(KERNEL_BUILD_PATH)/arch/arm64/boot/Image
@@ -66,7 +67,7 @@ QEMU_MACHINE := -cpu max -machine virt
 CFLAGS += -march=armv8-a
 endif
 else ifeq ($(ARCH),aarch64_be)
-CHOST := aarch64_be-linux-musl
+CHOST := aarch64_be-linux
 QEMU_ARCH := aarch64
 KERNEL_ARCH := arm64
 KERNEL_BZIMAGE := $(KERNEL_BUILD_PATH)/arch/arm64/boot/Image
@@ -78,7 +79,7 @@ QEMU_MACHINE := -cpu max -machine virt
 CFLAGS += -march=armv8-a
 endif
 else ifeq ($(ARCH),arm)
-CHOST := arm-linux-musleabi
+CHOST := arm-linux-gnueabi
 QEMU_ARCH := arm
 KERNEL_ARCH := arm
 KERNEL_BZIMAGE := $(KERNEL_BUILD_PATH)/arch/arm/boot/zImage
@@ -90,7 +91,7 @@ QEMU_MACHINE := -cpu max -machine virt
 CFLAGS += -march=armv7-a -mabi=aapcs-linux
 endif
 else ifeq ($(ARCH),armeb)
-CHOST := armeb-linux-musleabi
+CHOST := armeb-linux-gnueabi
 QEMU_ARCH := arm
 KERNEL_ARCH := arm
 KERNEL_BZIMAGE := $(KERNEL_BUILD_PATH)/arch/arm/boot/zImage
@@ -103,7 +104,7 @@ CFLAGS += -march=armv7-a -mabi=aapcs-linux
 LDFLAGS += -Wl,--be8
 endif
 else ifeq ($(ARCH),x86_64)
-CHOST := x86_64-linux-musl
+CHOST := x86_64-linux
 QEMU_ARCH := x86_64
 KERNEL_ARCH := x86_64
 KERNEL_BZIMAGE := $(KERNEL_BUILD_PATH)/arch/x86/boot/bzImage
@@ -113,19 +114,19 @@ QEMU_MACHINE := -cpu host -machine microvm,accel=kvm,pit=off,pic=off,rtc=off,acp
 else
 QEMU_MACHINE := -cpu max -machine microvm,acpi=off
 endif
-else ifeq ($(ARCH),i686)
-CHOST := i686-linux-musl
+else ifeq ($(ARCH),i386)
+CHOST := i386-linux
 QEMU_ARCH := i386
 KERNEL_ARCH := x86
 KERNEL_BZIMAGE := $(KERNEL_BUILD_PATH)/arch/x86/boot/bzImage
 QEMU_VPORT_RESULT := virtio-serial-device
-ifeq ($(subst x86_64,i686,$(HOST_ARCH)),$(ARCH))
+ifeq ($(subst x86_64,i386,$(HOST_ARCH)),$(ARCH))
 QEMU_MACHINE := -cpu host -machine microvm,accel=kvm,pit=off,pic=off,rtc=off,acpi=off
 else
 QEMU_MACHINE := -cpu coreduo -machine microvm,acpi=off
 endif
 else ifeq ($(ARCH),mips64)
-CHOST := mips64-linux-musl
+CHOST := mips64-linux
 QEMU_ARCH := mips64
 KERNEL_ARCH := mips
 KERNEL_BZIMAGE := $(KERNEL_BUILD_PATH)/vmlinux
@@ -137,7 +138,7 @@ QEMU_MACHINE := -cpu MIPS64R2-generic -machine malta -smp 1
 CFLAGS += -march=mips64r2 -EB
 endif
 else ifeq ($(ARCH),mips64el)
-CHOST := mips64el-linux-musl
+CHOST := mips64el-linux
 QEMU_ARCH := mips64el
 KERNEL_ARCH := mips
 KERNEL_BZIMAGE := $(KERNEL_BUILD_PATH)/vmlinux
@@ -149,7 +150,7 @@ QEMU_MACHINE := -cpu MIPS64R2-generic -machine malta -smp 1
 CFLAGS += -march=mips64r2 -EL
 endif
 else ifeq ($(ARCH),mips)
-CHOST := mips-linux-musl
+CHOST := mips-linux
 QEMU_ARCH := mips
 KERNEL_ARCH := mips
 KERNEL_BZIMAGE := $(KERNEL_BUILD_PATH)/vmlinux
@@ -161,7 +162,7 @@ QEMU_MACHINE := -cpu 24Kf -machine malta -smp 1
 CFLAGS += -march=mips32r2 -EB
 endif
 else ifeq ($(ARCH),mipsel)
-CHOST := mipsel-linux-musl
+CHOST := mipsel-linux
 QEMU_ARCH := mipsel
 KERNEL_ARCH := mips
 KERNEL_BZIMAGE := $(KERNEL_BUILD_PATH)/vmlinux
@@ -173,7 +174,7 @@ QEMU_MACHINE := -cpu 24Kf -machine malta -smp 1
 CFLAGS += -march=mips32r2 -EL
 endif
 else ifeq ($(ARCH),powerpc64)
-CHOST := powerpc64-linux-musl
+CHOST := powerpc64-linux
 QEMU_ARCH := ppc64
 KERNEL_ARCH := powerpc
 KERNEL_BZIMAGE := $(KERNEL_BUILD_PATH)/vmlinux
@@ -183,7 +184,7 @@ else
 QEMU_MACHINE := -machine pseries -device spapr-rng,rng=rng -object rng-random,id=rng
 endif
 else ifeq ($(ARCH),powerpc64le)
-CHOST := powerpc64le-linux-musl
+CHOST := powerpc64le-linux
 QEMU_ARCH := ppc64
 KERNEL_ARCH := powerpc
 KERNEL_BZIMAGE := $(KERNEL_BUILD_PATH)/vmlinux
@@ -193,7 +194,7 @@ else
 QEMU_MACHINE := -machine pseries -device spapr-rng,rng=rng -object rng-random,id=rng
 endif
 else ifeq ($(ARCH),powerpc)
-CHOST := powerpc-linux-musl
+CHOST := powerpc-linux
 QEMU_ARCH := ppc
 KERNEL_ARCH := powerpc
 KERNEL_BZIMAGE := $(KERNEL_BUILD_PATH)/arch/powerpc/boot/uImage
@@ -203,7 +204,7 @@ else
 QEMU_MACHINE := -machine ppce500
 endif
 else ifeq ($(ARCH),m68k)
-CHOST := m68k-linux-musl
+CHOST := m68k-linux
 QEMU_ARCH := m68k
 KERNEL_ARCH := m68k
 KERNEL_BZIMAGE := $(KERNEL_BUILD_PATH)/vmlinux
@@ -215,7 +216,7 @@ else
 QEMU_MACHINE := -machine virt -smp 1 -append $(KERNEL_CMDLINE)
 endif
 else ifeq ($(ARCH),riscv64)
-CHOST := riscv64-linux-musl
+CHOST := riscv64-linux
 QEMU_ARCH := riscv64
 KERNEL_ARCH := riscv
 KERNEL_BZIMAGE := $(KERNEL_BUILD_PATH)/arch/riscv/boot/Image
@@ -226,7 +227,7 @@ else
 QEMU_MACHINE := -cpu rv64 -machine virt
 endif
 else ifeq ($(ARCH),riscv32)
-CHOST := riscv32-linux-musl
+CHOST := riscv32-linux
 QEMU_ARCH := riscv32
 KERNEL_ARCH := riscv
 KERNEL_BZIMAGE := $(KERNEL_BUILD_PATH)/arch/riscv/boot/Image
@@ -236,12 +237,12 @@ QEMU_MACHINE := -cpu host,accel=kvm -machine virt
 else
 QEMU_MACHINE := -cpu rv32 -machine virt
 endif
-else ifeq ($(ARCH),s390x)
-CHOST := s390x-linux-musl
+else ifeq ($(ARCH),s390)
+CHOST := s390-linux
 QEMU_ARCH := s390x
 KERNEL_ARCH := s390
 KERNEL_BZIMAGE := $(KERNEL_BUILD_PATH)/arch/s390/boot/bzImage
-KERNEL_CMDLINE := $(shell sed -n 's/CONFIG_CMDLINE=\(.*\)/\1/p' arch/s390x.config)
+KERNEL_CMDLINE := $(shell sed -n 's/CONFIG_CMDLINE=\(.*\)/\1/p' arch/s390.config)
 QEMU_VPORT_RESULT := virtio-serial-ccw
 ifeq ($(HOST_ARCH),$(ARCH))
 QEMU_MACHINE := -cpu host,accel=kvm -machine s390-ccw-virtio -append $(KERNEL_CMDLINE)
@@ -249,20 +250,20 @@ else
 QEMU_MACHINE := -cpu max -machine s390-ccw-virtio -append $(KERNEL_CMDLINE)
 endif
 else ifeq ($(ARCH),um)
-CHOST := $(HOST_ARCH)-linux-musl
+CHOST := $(HOST_ARCH)-linux
 KERNEL_BZIMAGE := $(KERNEL_BUILD_PATH)/vmlinux
 KERNEL_ARCH := um
 KERNEL_CMDLINE := $(shell sed -n 's/CONFIG_CMDLINE=\(.*\)/\1/p' arch/um.config)
 else
-$(error I only build: x86_64, i686, arm, armeb, aarch64, aarch64_be, mips, mipsel, mips64, mips64el, powerpc64, powerpc64le, powerpc, m68k, riscv64, riscv32, s390x, um)
+$(error I only build: x86_64, i386, arm, armeb, aarch64, aarch64_be, mips, mipsel, mips64, mips64el, powerpc64, powerpc64le, powerpc, m68k, riscv64, riscv32, s390, um)
 endif
 
-TOOLCHAIN_FILENAME := $(CHOST)-cross.tgz
+TOOLCHAIN_FILENAME := x86_64-gcc-14.2.0-nolibc-$(CHOST).tar.gz
 TOOLCHAIN_TAR := $(DISTFILES_PATH)/$(TOOLCHAIN_FILENAME)
-TOOLCHAIN_PATH := $(BUILD_PATH)/$(CHOST)-cross
-TOOLCHAIN_DIR := https://download.wireguard.com/qemu-test/toolchains/20211123/
-$(eval $(call file_download,toolchain-sha256sums-20211123,$(TOOLCHAIN_DIR)SHA256SUMS#,83da033fd8c798df476c21d9612da2dfb896ec62fbed4ceec5eefc0e56b3f0c8))
-$(eval $(call file_download,$(TOOLCHAIN_FILENAME),$(TOOLCHAIN_DIR),,$(DISTFILES_PATH)/toolchain-sha256sums-20211123))
+TOOLCHAIN_PATH := $(BUILD_PATH)/gcc-14.2.0-nolibc/$(CHOST)
+TOOLCHAIN_DIR := https://mirrors.edge.kernel.org/pub/tools/crosstool/files/bin/x86_64/14.2.0/
+$(eval $(call file_download,toolchain-sha256sums-20240829,$(TOOLCHAIN_DIR)sha256sums.asc#,08336bfbf28cce8c6497ee1fce79bac1d6cc8c6b7dfff35551c60bc99ce6b2d9))
+$(eval $(call file_download,$(TOOLCHAIN_FILENAME),$(TOOLCHAIN_DIR),,$(DISTFILES_PATH)/toolchain-sha256sums-20240829))
 
 STRIP := $(CHOST)-strip
 CROSS_COMPILE_FLAG := --build=$(CBUILD) --host=$(CHOST)
@@ -270,8 +271,9 @@ $(info Building for $(CHOST) using $(CBUILD))
 ifneq ($(ARCH),um)
 export CROSS_COMPILE := $(CHOST)-
 endif
-export PATH := $(TOOLCHAIN_PATH)/bin:$(PATH)
-export CC := $(CHOST)-gcc
+export PATH := $(TOOLCHAIN_PATH)/$(CHOST)/bin:$(TOOLCHAIN_PATH)/bin:$(PATH)
+export REAL_CC := $(CHOST)-gcc
+export CC := musl-gcc
 CCACHE_PATH := $(shell which ccache 2>/dev/null)
 ifneq ($(CCACHE_PATH),)
 export KBUILD_BUILD_TIMESTAMP := Fri Jun  5 15:58:00 CEST 2015
@@ -280,7 +282,7 @@ export CCACHE_SLOPPINESS := file_macro,time_macros
 export CCACHE_DIR ?= $(PWD)/ccache
 endif
 
-USERSPACE_DEPS := $(TOOLCHAIN_PATH)/.installed $(TOOLCHAIN_PATH)/$(CHOST)/include/linux/.installed
+USERSPACE_DEPS := $(TOOLCHAIN_PATH)/.installed $(TOOLCHAIN_PATH)/$(CHOST)/include/linux/.installed $(TOOLCHAIN_PATH)/$(CHOST)/bin/musl-gcc
 
 comma := ,
 build: $(KERNEL_BZIMAGE)
@@ -352,12 +354,25 @@ endif
 $(TOOLCHAIN_PATH)/.installed: $(TOOLCHAIN_TAR)
 	mkdir -p $(BUILD_PATH)
 	flock -s $<.lock tar -C $(BUILD_PATH) -xf $<
-	$(STRIP) -s $(TOOLCHAIN_PATH)/$(CHOST)/lib/libc.so
 ifneq ($(CCACHE_PATH),)
 	mkdir -p $(TOOLCHAIN_PATH)/bin/ccache
-	ln -s $(CCACHE_PATH) $(TOOLCHAIN_PATH)/bin/ccache/$(CC)
+	ln -s $(CCACHE_PATH) $(TOOLCHAIN_PATH)/bin/ccache/$(REAL_CC)
 endif
 	touch $@
+
+
+$(TOOLCHAIN_PATH)/$(CHOST)/bin/musl-gcc: CC := $(REAL_CC)
+$(TOOLCHAIN_PATH)/$(CHOST)/bin/musl-gcc: $(MUSL_TAR) | $(TOOLCHAIN_PATH)/.installed
+	mkdir -p $(BUILD_PATH)
+	flock -s $<.lock tar -C $(BUILD_PATH) -xf $<
+	cd $(MUSL_PATH) && ./configure --prefix=$(TOOLCHAIN_PATH)/$(CHOST) --exec-prefix=$(TOOLCHAIN_PATH)/$(CHOST) --syslibdir=$(TOOLCHAIN_PATH)/$(CHOST)/lib --disable-static
+	$(MAKE) -C $(MUSL_PATH)
+	$(MAKE) -C $(MUSL_PATH) obj/musl-gcc lib/musl-gcc.specs
+	$(MAKE) -C $(MUSL_PATH) install
+	$(STRIP) -s $(TOOLCHAIN_PATH)/$(CHOST)/lib/libc.so
+	sed -i "/-dynamic-linker/s#$(TOOLCHAIN_PATH)/$(CHOST)##" $(MUSL_PATH)/lib/musl-gcc.specs
+	cp -v $(MUSL_PATH)/lib/musl-gcc.specs $(TOOLCHAIN_PATH)/$(CHOST)/lib/
+	cp -v $(MUSL_PATH)/obj/musl-gcc $@
 
 $(IPERF_PATH)/.installed: $(IPERF_TAR)
 	mkdir -p $(BUILD_PATH)
