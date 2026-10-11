@@ -454,7 +454,7 @@ static int set_peer(struct wg_device *wg, struct nlattr **attrs)
 			persistent_keepalive_interval &&
 			netif_running(wg->dev);
 
-		peer->persistent_keepalive_interval = persistent_keepalive_interval;
+		WRITE_ONCE(peer->persistent_keepalive_interval, persistent_keepalive_interval);
 		if (send_keepalive)
 			wg_packet_send_keepalive(peer);
 	}

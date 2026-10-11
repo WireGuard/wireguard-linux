@@ -140,7 +140,7 @@ static void wg_expired_send_persistent_keepalive(struct timer_list *timer)
 	struct wg_peer *peer = timer_container_of(peer, timer,
 						  timer_persistent_keepalive);
 
-	if (likely(peer->persistent_keepalive_interval))
+	if (likely(READ_ONCE(peer->persistent_keepalive_interval)))
 		wg_packet_send_keepalive(peer);
 }
 
@@ -214,9 +214,10 @@ void wg_timers_session_derived(struct wg_peer *peer)
  */
 void wg_timers_any_authenticated_packet_traversal(struct wg_peer *peer)
 {
-	if (peer->persistent_keepalive_interval)
-		mod_peer_timer(peer, &peer->timer_persistent_keepalive,
-			jiffies + peer->persistent_keepalive_interval * HZ);
+	u16 interval = READ_ONCE(peer->persistent_keepalive_interval);
+
+	if (interval)
+		mod_peer_timer(peer, &peer->timer_persistent_keepalive, jiffies + interval * HZ);
 }
 
 void wg_timers_init(struct wg_peer *peer)
