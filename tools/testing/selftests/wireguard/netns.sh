@@ -480,6 +480,11 @@ ip2 route add 10.50.0.0/24 dev veth2
 n2 wg set wg0 peer "$pub1" endpoint 10.50.0.1:1
 n2 ping -W 1 -c 1 192.168.241.1
 [[ $(n2 wg show wg0 endpoints) == "$pub1	10.50.0.1:1" ]]
+# And verify it works with p2p addresses too
+ip1 addr del 10.50.0.1/24 dev dummy0
+ip1 addr add 10.50.0.1 peer 10.50.0.2/32 dev dummy0
+n2 ping -W 1 -c 1 192.168.241.1
+[[ $(n2 wg show wg0 endpoints) == "$pub1	10.50.0.1:1" ]]
 
 ip1 link del dummy0
 ip1 addr flush dev veth1
